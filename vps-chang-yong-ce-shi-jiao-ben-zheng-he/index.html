@@ -1,0 +1,264 @@
+<html>
+<head>
+    <meta charset="utf-8"/>
+<meta name="description" content=""/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+
+<title>VPS常用测试脚本整合 | 小白白爱折腾</title>
+
+<link rel="shortcut icon" href="https://blog.xbbazt.de/favicon.ico?v=1729494655724">
+
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://blog.xbbazt.de/styles/main.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css">
+
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.min.js"></script>
+<!-- DEMO JS -->
+<!--<script src="media/scripts/index.js"></script>-->
+
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            小白白爱折腾
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+                <div class="nav-item">
+                    
+                        <a href="/" class="menu gt-a-link">
+                            首页
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="/archives" class="menu gt-a-link">
+                            归档
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="/tags" class="menu gt-a-link">
+                            标签
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="https://blog.xbbazt.de/guan-yu" class="menu gt-a-link">
+                            关于
+                        </a>
+                    
+                </div>
+            
+        </div>
+        <div style="text-align: center">
+            <form id="gridea-search-form" style="position: relative" data-update="1729494655724" action="/search/index.html">
+                <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
+                <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
+            </form>
+        </div>
+    </div>
+</nav>
+
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    VPS常用测试脚本整合
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2024-10-19 ·
+                    </time>
+                    
+                </div>
+                <div class="post-content">
+                    <p><em><strong>声明文中所提及到的项目全部来源于互联网，并未与作者有直接或者间接关系！</strong></em></p>
+<h1 id="重装系统脚本仅适用于linux-kvm">重装系统脚本(仅适用于linux kvm)</h1>
+<h1 id="出自-leitbogioro-star-3k-项目地址">出自: leitbogioro star 3k <a href="https://github.com/leitbogioro/Tools">项目地址</a></h1>
+<pre><code class="language-shell">wget --no-check-certificate -qO InstallNET.sh 'https://raw.githubusercontent.com/leitbogioro/Tools/master/Linux_reinstall/InstallNET.sh' &amp;&amp; chmod a+x InstallNET.sh
+</code></pre>
+<h1 id="出自moeclub-star-831-项目地址">出自：MoeClub star 831 <a href="https://github.com/MoeClub/Note">项目地址</a></h1>
+<pre><code class="language-shell">bash &lt;(wget --no-check-certificate -qO- 'https://raw.githubusercontent.com/MoeClub/Note/master/InstallNET.sh') -d 10 -v 64 -p &quot;自定义root密码&quot; -port &quot;自定义ssh端口&quot; -a -firmware
+</code></pre>
+<pre><code class="language-shell">-firmware      额外的驱动支持 
+-d             Debian系统 后面是系统版本号，例：9、10 ... 
+-c             Centos系统 后面是系统版本号，例：6.9、6.10 ... 
+-u             Ubuntu系统 后面是系统版本号，例：16.04、18.04 ... 
+-v             系统位数，64位或32位，只写数字 
+-a             auto，全自动无人值守安装 
+-mirror       后面是指定镜像源地址 
+-p             后面写自定义密码 
+–ip-addr      ifconfig -a 后获取到的 例：194.87.xxx.xxx 
+–ip-gate      route -n 后获取到的 例 194.87.xxx.xxx 
+–ip-mask      255.255.xxx.xx
+</code></pre>
+<p><strong>注意事项：</strong></p>
+<ul>
+<li>
+<p>Vicer脚本目前不支持重装为CentOS 7系统，支持CentOS 6.9以下版本。</p>
+</li>
+<li>
+<p>重装的系统源自官方发行版。</p>
+</li>
+<li>
+<p>安装过程全自动进行，无需VNC操作，无需进入救援模式。</p>
+</li>
+<li>
+<p>系统安装完成后的默认用户名为：root，未自定义密码的话，默认密码为：MoeClub.org 。</p>
+</li>
+<li>
+<p>部分机器需要设置网卡，否则可以VNC，但是不能远程SSH。</p>
+</li>
+<li>
+<p>三毛、甲骨文 记得去掉 -firmware 参数，否则会出现错误。</p>
+</li>
+<li>
+<p>如果是腾讯云需要先卸载组件，否则会导致报错 DD失败。</p>
+<h1 id="出自-bin456789-star-23k-项目地址">出自: bin456789 star 2.3k <a href="https://github.com/bin456789/reinstall">项目地址</a></h1>
+<pre><code class="language-shell">curl -O https://raw.githubusercontent.com/bin456789/reinstall/main/reinstall.sh || wget -O reinstall.sh $_
+</code></pre>
+<h1 id="重装系统脚本仅适用linux-lxc">重装系统脚本(仅适用Linux lxc)</h1>
+<h1 id="出自-lloydasp-star-348-nodeseek-论坛站长-项目地址">出自: LloydAsp star 348 nodeseek 论坛站长 <a href="https://github.com/LloydAsp/OsMutation">项目地址</a></h1>
+<pre><code class="language-shell">wget -qO OsMutation.sh https://raw.githubusercontent.com/LloydAsp/OsMutation/main/OsMutation.sh &amp;&amp; chmod u+x OsMutation.sh &amp;&amp; ./OsMutation.sh
+</code></pre>
+</li>
+</ul>
+<h1 id="vps综合性能测试脚本">vps综合性能测试脚本</h1>
+<h2 id="融合怪-star-36k-项目地址">融合怪 star 3.6k <a href="https://github.com/spiritLHLS/ecs">项目地址</a></h2>
+<p>融合怪: 顾明思议就是把所有vps测试工具融合在一个脚本中了。内主要包含: 硬件与软件信息查询，IP和ASN查询，CPU评估，硬盘测速，流媒体解锁，IP质量检测，网络路由与速率等。包含了Github比较常用的开源项目!</p>
+<p>使用方法:</p>
+<pre><code class="language-shell">curl -L https://gitlab.com/spiritysdx/za/-/raw/main/ecs.sh -o ecs.sh &amp;&amp; chmod +x ecs.sh &amp;&amp; bash ecs.sh
+</code></pre>
+<p>或</p>
+<pre><code class="language-shell">curl -L https://github.com/spiritLHLS/ecs/raw/main/ecs.sh -o ecs.sh &amp;&amp; chmod +x ecs.sh &amp;&amp; bash ecs.sh
+</code></pre>
+<h1 id="yabs-项目地址">YABS <a href="https://github.com/masonr/yet-another-bench-script?tab=readme-ov-file">项目地址</a></h1>
+<p>此脚本可自动执行业内最佳的基准测试工具。其中包括几项测试，用于检查服务器关键区域的性能：使用<a href="https://github.com/axboe/fio">fio</a>测试磁盘性能、使用<a href="https://github.com/esnet/iperf">iperf3</a>测试网络性能以及使用<a href="https://www.geekbench.com/">Geekbench</a>测试 CPU/内存性能。此脚本的设计无需安装任何外部依赖项，也无需提升权限即可运行。</p>
+<p>使用方法:</p>
+<pre><code class="language-shell">curl -sL yabs.sh | bash
+</code></pre>
+<p>或</p>
+<pre><code class="language-shell">wget -qO- yabs.sh | bash
+</code></pre>
+<h1 id="geekbench-5-star-109-项目地址">Geekbench 5 star 109 <a href="https://github.com/i-abc/GB5">项目地址</a></h1>
+<p>用心做好 GB5 测试，让测试更方便、更迅速、更人性化。</p>
+<pre><code class="language-shell">bash &lt;(wget -qO- https://raw.githubusercontent.com/i-abc/GB5/main/gb5-test.sh)
+</code></pre>
+<h1 id="lemonbench-star-466-项目地址">LemonBench star 466 <a href="https://github.com/LemonBench/LemonBench">项目地址</a></h1>
+<p>使用 Shell 脚本开发的简单 Linux 基准测试实用程序</p>
+<p>使用方法:</p>
+<pre><code class="language-shell">wget -qO- https://raw.githubusercontent.com/LemonBench/LemonBench/main/LemonBench.sh | bash -s -- --fast
+</code></pre>
+<p>或</p>
+<pre><code class="language-shell">curl -fsL https://raw.githubusercontent.com/LemonBench/LemonBench/main/LemonBench.sh | bash -s -- --fast
+</code></pre>
+<p># 网络测速与VPS路由</p>
+<h1 id="测试-vps-ipv4ipv6-路由详细每一跳">测试 VPS IPv4/IPV6 路由(详细每一跳)</h1>
+<pre><code class="language-shell">wget -N --no-check-certificate https://raw.githubusercontent.com/Chennhaoo/Shell_Bash/master/AutoTrace.sh &amp;&amp; chmod +x AutoTrace.sh &amp;&amp; bash AutoTrace.sh
+</code></pre>
+<p># backtrace star 945 <a href="https://github.com/zhanghanyun/backtrace">项目地址</a></p>
+<p>推荐小白使用，快速测试VPS线路。</p>
+<pre><code class="language-shell">curl https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh -sSf | sh
+</code></pre>
+<p># Speedtest star 668 <a href="https://github.com/i-abc/Speedtest">项目地址</a></p>
+<p>VPS国内三网测试</p>
+<p>使用方法:</p>
+<pre><code class="language-shell">bash &lt;(curl -sL https://raw.githubusercontent.com/i-abc/Speedtest/main/speedtest.sh)
+</code></pre>
+<p># bench</p>
+<p>硬件系统参数及其IO，国外测速，国内测速</p>
+<pre><code class="language-shell">wget -qO- bench.sh | bash
+</code></pre>
+<p># VPS Linux 优化相关</p>
+<p># 原生BBR打开方法(仅用于 Debian系列系统)</p>
+<pre><code class="language-shell">echo &quot;net.core.default_qdisc=fq&quot; &gt;&gt; /etc/sysctl.conf
+echo &quot;net.ipv4.tcp_congestion_control=bbr&quot; &gt;&gt; /etc/sysctl.conf
+sysctl -p
+sysctl net.ipv4.tcp_available_congestion_control
+lsmod | grep bbr
+</code></pre>
+
+                </div>
+            </article>
+        </div>
+
+        
+            <div class="next-post">
+                <div class="next gt-c-content-color-first">下一篇</div>
+                <a href="https://blog.xbbazt.de/guan-yu/" class="post-title gt-a-link">
+                    关于作者
+                </a>
+            </div>
+        
+
+        
+
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">生活记录 VPS评测 运维经验 软件分享 java c++</div>
+    <div class="social-container">
+        
+            
+                <a href="https://github.com/xiaobaibai3" target="_blank">
+                    <i class="fab fa-github gt-c-content-color-first"></i>
+                </a>
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    <div class="footer-info">
+        小白白爱折腾，搬运标注来源。
+<a href=https://blog.xbbazt.de>Blog<a/> <a href=https://xbbyun.eu.org/status/vps>探针<a/>
+    </div>
+    <div>
+        Theme by <a href="https://imhanjie.com/" target="_blank">imhanjie</a>, Powered by <a
+                href="https://github.com/getgridea/gridea" target="_blank">Gridea | <a href="https://blog.xbbazt.de/atom.xml" target="_blank">RSS</a></a>
+    </div>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+</div>
+</body>
+</html>

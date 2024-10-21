@@ -1,0 +1,357 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <id>https://blog.xbbazt.de</id>
+    <title>小白白爱折腾</title>
+    <updated>2024-10-21T12:18:14.974Z</updated>
+    <generator>https://github.com/jpmonette/feed</generator>
+    <link rel="alternate" href="https://blog.xbbazt.de"/>
+    <link rel="self" href="https://blog.xbbazt.de/atom.xml"/>
+    <subtitle>生活记录 VPS评测 运维经验 软件分享 java c++</subtitle>
+    <logo>https://blog.xbbazt.de/images/avatar.png</logo>
+    <icon>https://blog.xbbazt.de/favicon.ico</icon>
+    <rights>All rights reserved 2024, 小白白爱折腾</rights>
+    <entry>
+        <title type="html"><![CDATA[搭建一个属于自己VPS探针  MyNodeQuery]]></title>
+        <id>https://blog.xbbazt.de/lPBUvgJ325/</id>
+        <link href="https://blog.xbbazt.de/lPBUvgJ325/">
+        </link>
+        <updated>2024-10-20T15:53:35.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="mynodequrey-简介">MyNodeQurey 简介</h1>
+<p>关于 MyNodeQuery，这是一款轻量级的服务器和网络性能监控工具，特别用于延迟监控。它支持实时监控虚拟专用服务器（VPS）网络状况，支持对节点进行 IPv4 和 IPv6 的 Ping 测试。MyNodeQuery 提供多种更新和优化功能，例如在最新版本 1.0.3.0 中，性能得到了优化，增加了国家地区旗帜的显示功能，并增加了更多的网络监控细节！</p>
+<h1 id="搭建mynodequery">搭建MyNodeQuery</h1>
+<ol>
+<li>1c512m10g 即可，区域按你的所在位置购买。如果你是在中国大陆，不是很推荐中国大陆服务器。会造成无法访问或下载速度慢种种原因导致无法正常部署。</li>
+<li>域名一枚并托管到DNS服务商。</li>
+</ol>
+<h1 id="准备环境">准备环境</h1>
+<ol>
+<li>系统：最好使用yum或apt包管理器Linux系统易于操作。本教程以 Debian系统为例，centos等请替换教程中 apt 字样代码即可。</li>
+<li>软件：Docker，Docker-compose，curl，Vim，socat，Nginx(本教程以Nginx为例),，acme</li>
+</ol>
+<h1 id="安装流程">安装流程</h1>
+<p>接下来我们废话不多说，直入主题吧！</p>
+<h2 id="安装可能使用到的软件">安装可能使用到的软件</h2>
+<p>更新系统源数据及软件</p>
+<pre><code class="language-shell">apt update &amp;&amp; apt upgrade -y
+</code></pre>
+<p>安装软件</p>
+<pre><code class="language-shell">apt install curl vim socat -y
+</code></pre>
+<h2 id="安装docker">安装Docker</h2>
+<pre><code class="language-shell">curl -fsSL https://get.docker.com | bash -s docker
+</code></pre>
+<p>测试是否安装成功</p>
+<pre><code class="language-shell">root@localhost:~# docker -v
+Docker version 27.3.1, build ce12230
+</code></pre>
+<p>使用Docker官方一键安装最新版Docker，无需参考官方文档。简单又省力！</p>
+<h2 id="安装docker-compose">安装Docker-compose</h2>
+<pre><code class="language-shell">curl -L &quot;https://github.com/docker/compose/releases/download/v2.29.6/docker-compose-$(uname -s)-$(uname -m)&quot; -o /usr/local/bin/docker-compose
+</code></pre>
+<pre><code class="language-shell">chmod +x /usr/local/bin/docker-compose
+</code></pre>
+<p>测试是否安装成功</p>
+<pre><code class="language-shell">root@localhost:/usr/local/bin# docker-compose version
+Docker Compose version v2.29.6
+</code></pre>
+<h2 id="创建目录">创建目录</h2>
+<pre><code class="language-shell">cd /home
+mkdir web
+cd web
+mkdir mynodequery
+mkdir mysql
+mkdir certs
+touch nginx.conf
+touch docker-compose.yml
+</code></pre>
+<h2 id="docker-compose配置文件的编写">docker-compose配置文件的编写</h2>
+<pre><code class="language-yml">services:
+  nginx:
+    image: nginx
+    container_name: nginx
+    restart: always
+    ports:
+      - &quot;80:80&quot;
+      - &quot;443:443&quot;
+    volumes:
+      - /home/web/nginx.conf:/etc/nginx/nginx.conf
+      - /home/web/certs:/etc/nginx/certs
+
+  mysql:
+    image: mysql
+    container_name: mysql # 主机名
+    restart: always
+    volumes:
+      - /home/web/mysql:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword # root密码
+      MYSQL_DATABASE: mynodequery # 数据库名
+      MYSQL_USER: xbbazt # 用户名
+      MYSQL_PASSWORD: xbbazt # 密码
+
+  mynodequery:
+    image: jaydenlee2019/mynodequery:latest
+    container_name: mynodequery
+    restart: always
+    ports:
+      - &quot;5000:5000&quot;
+    volumes:
+      - /home/web/mynodequery/appsettings.json:/app/appsettings.json
+    links:
+      - mysql
+</code></pre>
+<h2 id="创建mynodequery配置文件">创建mynodequery配置文件</h2>
+<pre><code class="language-shel">cat &gt; /home/web/mynodequery/appsettings.json &lt;&lt;EOF
+{
+    &quot;Logging&quot;: {
+        &quot;LogLevel&quot;: {
+            &quot;Default&quot;: &quot;Information&quot;,
+            &quot;Microsoft&quot;: &quot;Warning&quot;,
+            &quot;Microsoft.Hosting.Lifetime&quot;: &quot;Information&quot;
+        }
+    },
+    &quot;MySql&quot;: {
+        &quot;ConnectionString&quot;: &quot;&quot;
+    },
+    &quot;AllowedHosts&quot;: &quot;*&quot;,
+    &quot;Installed&quot;: &quot;false&quot;,
+    &quot;ReadNodeIpHeaderKey&quot;: &quot;X-Real-IP&quot;
+}
+EOF
+</code></pre>
+<h2 id="申请证书">申请证书</h2>
+<ol>
+<li>下载acme</li>
+</ol>
+<pre><code class="language-shell">curl https://get.acme.sh | sh
+</code></pre>
+<ol start="2">
+<li>输入你的邮箱</li>
+</ol>
+<pre><code class="language-shell">~/.acme.sh/acme.sh --register-account -m xxxx@gmail.com
+</code></pre>
+<ol start="3">
+<li>申请证书</li>
+</ol>
+<pre><code class="language-shell">~/.acme.sh/acme.sh --issue -d 域名 --standalone
+</code></pre>
+<ol start="4">
+<li>下载证书</li>
+</ol>
+<pre><code class="language-shell">~/.acme.sh/acme.sh --installcert -d 域名 --key-file /home/web/certs/key.pem --fullchain-file /home/web/certs/cert.pem
+</code></pre>
+<h2 id="nginx配置">nginx配置</h2>
+<pre><code class="language-yml">worker_processes  auto;
+
+error_log  /var/log/nginx/error.log warn;
+pid        /var/run/nginx.pid;
+
+events {
+    worker_connections  1024;
+}
+
+http {
+    include       /etc/nginx/mime.types;
+    default_type  application/octet-stream;
+
+    log_format  main  '$remote_addr - $remote_user [$time_local] &quot;$request&quot; '
+                      '$status $body_bytes_sent &quot;$http_referer&quot; '
+                      '&quot;$http_user_agent&quot; &quot;$http_x_forwarded_for&quot;';
+
+    access_log  /var/log/nginx/access.log  main;
+
+    sendfile        on;
+    keepalive_timeout  65;
+
+    upstream backend {
+        server 172.17.0.1:5000;
+    }
+
+    server {
+        listen       80;
+        server_name  域名; # 或者替换为你的域名
+
+        # 301 重定向 HTTP 到 HTTPS
+        return 301 https://$host$request_uri;
+    }
+
+    server {
+        listen       443 ssl;  # 监听 HTTPS 端口
+        server_name  域名; 
+
+        ssl_certificate      /etc/nginx/certs/cert.pem;  # 证书文件路径
+        ssl_certificate_key  /etc/nginx/certs/key.pem;    # 私钥文件路径
+
+        ssl_protocols       TLSv1.2 TLSv1.3;  # 使用的 TLS 版本
+        ssl_ciphers         HIGH:!aNULL:!MD5; # 支持的加密套件
+
+        location / {
+            proxy_pass http://backend;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+    }
+}
+</code></pre>
+<h2 id="启动你的docker容器">启动你的Docker容器</h2>
+<pre><code class="language-shell">docker-compose up -d
+</code></pre>
+<h2 id="访问">访问</h2>
+<p>访问刚才配置在nginx配置域名，就可得到如下页面！<br>
+<img src="https://blog.xbbazt.de/post-images/1729489586215.png" alt="" loading="lazy"></p>
+<ul>
+<li>主机名：mysql</li>
+<li>端口：3306</li>
+<li>数据库名：mynodequery</li>
+<li>用户ID：xbbazt</li>
+<li>密码：xbbazt</li>
+</ul>
+<h2 id="站点设置">站点设置</h2>
+<p>其他不用修改，只需要为你的探针设置管理员密码即可。</p>
+<h2 id="ping-设置">ping 设置</h2>
+<ul>
+<li>IP版本：IPv4/IPv6</li>
+<li>协议：ICMP=ping(无需端口)/TCP(需要请求端口)</li>
+<li>节点名称：取一个名字</li>
+<li>节点地址：域名/IP</li>
+</ul>
+<h2 id="部署完毕">部署完毕</h2>
+<figure data-type="image" tabindex="1"><img src="https://blog.xbbazt.de/post-images/1729493237284.png" alt="" loading="lazy"></figure>
+<h1 id="总结">总结：</h1>
+<p>只要按照每一步操作几乎100%都可以部署出来，要换作以前没有容器化确实探针部署不是一件容易的事情！</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[VPS常用测试脚本整合]]></title>
+        <id>https://blog.xbbazt.de/vps-chang-yong-ce-shi-jiao-ben-zheng-he/</id>
+        <link href="https://blog.xbbazt.de/vps-chang-yong-ce-shi-jiao-ben-zheng-he/">
+        </link>
+        <updated>2024-10-19T12:27:14.000Z</updated>
+        <content type="html"><![CDATA[<p><em><strong>声明文中所提及到的项目全部来源于互联网，并未与作者有直接或者间接关系！</strong></em></p>
+<h1 id="重装系统脚本仅适用于linux-kvm">重装系统脚本(仅适用于linux kvm)</h1>
+<h1 id="出自-leitbogioro-star-3k-项目地址">出自: leitbogioro star 3k <a href="https://github.com/leitbogioro/Tools">项目地址</a></h1>
+<pre><code class="language-shell">wget --no-check-certificate -qO InstallNET.sh 'https://raw.githubusercontent.com/leitbogioro/Tools/master/Linux_reinstall/InstallNET.sh' &amp;&amp; chmod a+x InstallNET.sh
+</code></pre>
+<h1 id="出自moeclub-star-831-项目地址">出自：MoeClub star 831 <a href="https://github.com/MoeClub/Note">项目地址</a></h1>
+<pre><code class="language-shell">bash &lt;(wget --no-check-certificate -qO- 'https://raw.githubusercontent.com/MoeClub/Note/master/InstallNET.sh') -d 10 -v 64 -p &quot;自定义root密码&quot; -port &quot;自定义ssh端口&quot; -a -firmware
+</code></pre>
+<pre><code class="language-shell">-firmware      额外的驱动支持 
+-d             Debian系统 后面是系统版本号，例：9、10 ... 
+-c             Centos系统 后面是系统版本号，例：6.9、6.10 ... 
+-u             Ubuntu系统 后面是系统版本号，例：16.04、18.04 ... 
+-v             系统位数，64位或32位，只写数字 
+-a             auto，全自动无人值守安装 
+-mirror       后面是指定镜像源地址 
+-p             后面写自定义密码 
+–ip-addr      ifconfig -a 后获取到的 例：194.87.xxx.xxx 
+–ip-gate      route -n 后获取到的 例 194.87.xxx.xxx 
+–ip-mask      255.255.xxx.xx
+</code></pre>
+<p><strong>注意事项：</strong></p>
+<ul>
+<li>
+<p>Vicer脚本目前不支持重装为CentOS 7系统，支持CentOS 6.9以下版本。</p>
+</li>
+<li>
+<p>重装的系统源自官方发行版。</p>
+</li>
+<li>
+<p>安装过程全自动进行，无需VNC操作，无需进入救援模式。</p>
+</li>
+<li>
+<p>系统安装完成后的默认用户名为：root，未自定义密码的话，默认密码为：MoeClub.org 。</p>
+</li>
+<li>
+<p>部分机器需要设置网卡，否则可以VNC，但是不能远程SSH。</p>
+</li>
+<li>
+<p>三毛、甲骨文 记得去掉 -firmware 参数，否则会出现错误。</p>
+</li>
+<li>
+<p>如果是腾讯云需要先卸载组件，否则会导致报错 DD失败。</p>
+<h1 id="出自-bin456789-star-23k-项目地址">出自: bin456789 star 2.3k <a href="https://github.com/bin456789/reinstall">项目地址</a></h1>
+<pre><code class="language-shell">curl -O https://raw.githubusercontent.com/bin456789/reinstall/main/reinstall.sh || wget -O reinstall.sh $_
+</code></pre>
+<h1 id="重装系统脚本仅适用linux-lxc">重装系统脚本(仅适用Linux lxc)</h1>
+<h1 id="出自-lloydasp-star-348-nodeseek-论坛站长-项目地址">出自: LloydAsp star 348 nodeseek 论坛站长 <a href="https://github.com/LloydAsp/OsMutation">项目地址</a></h1>
+<pre><code class="language-shell">wget -qO OsMutation.sh https://raw.githubusercontent.com/LloydAsp/OsMutation/main/OsMutation.sh &amp;&amp; chmod u+x OsMutation.sh &amp;&amp; ./OsMutation.sh
+</code></pre>
+</li>
+</ul>
+<h1 id="vps综合性能测试脚本">vps综合性能测试脚本</h1>
+<h2 id="融合怪-star-36k-项目地址">融合怪 star 3.6k <a href="https://github.com/spiritLHLS/ecs">项目地址</a></h2>
+<p>融合怪: 顾明思议就是把所有vps测试工具融合在一个脚本中了。内主要包含: 硬件与软件信息查询，IP和ASN查询，CPU评估，硬盘测速，流媒体解锁，IP质量检测，网络路由与速率等。包含了Github比较常用的开源项目!</p>
+<p>使用方法:</p>
+<pre><code class="language-shell">curl -L https://gitlab.com/spiritysdx/za/-/raw/main/ecs.sh -o ecs.sh &amp;&amp; chmod +x ecs.sh &amp;&amp; bash ecs.sh
+</code></pre>
+<p>或</p>
+<pre><code class="language-shell">curl -L https://github.com/spiritLHLS/ecs/raw/main/ecs.sh -o ecs.sh &amp;&amp; chmod +x ecs.sh &amp;&amp; bash ecs.sh
+</code></pre>
+<h1 id="yabs-项目地址">YABS <a href="https://github.com/masonr/yet-another-bench-script?tab=readme-ov-file">项目地址</a></h1>
+<p>此脚本可自动执行业内最佳的基准测试工具。其中包括几项测试，用于检查服务器关键区域的性能：使用<a href="https://github.com/axboe/fio">fio</a>测试磁盘性能、使用<a href="https://github.com/esnet/iperf">iperf3</a>测试网络性能以及使用<a href="https://www.geekbench.com/">Geekbench</a>测试 CPU/内存性能。此脚本的设计无需安装任何外部依赖项，也无需提升权限即可运行。</p>
+<p>使用方法:</p>
+<pre><code class="language-shell">curl -sL yabs.sh | bash
+</code></pre>
+<p>或</p>
+<pre><code class="language-shell">wget -qO- yabs.sh | bash
+</code></pre>
+<h1 id="geekbench-5-star-109-项目地址">Geekbench 5 star 109 <a href="https://github.com/i-abc/GB5">项目地址</a></h1>
+<p>用心做好 GB5 测试，让测试更方便、更迅速、更人性化。</p>
+<pre><code class="language-shell">bash &lt;(wget -qO- https://raw.githubusercontent.com/i-abc/GB5/main/gb5-test.sh)
+</code></pre>
+<h1 id="lemonbench-star-466-项目地址">LemonBench star 466 <a href="https://github.com/LemonBench/LemonBench">项目地址</a></h1>
+<p>使用 Shell 脚本开发的简单 Linux 基准测试实用程序</p>
+<p>使用方法:</p>
+<pre><code class="language-shell">wget -qO- https://raw.githubusercontent.com/LemonBench/LemonBench/main/LemonBench.sh | bash -s -- --fast
+</code></pre>
+<p>或</p>
+<pre><code class="language-shell">curl -fsL https://raw.githubusercontent.com/LemonBench/LemonBench/main/LemonBench.sh | bash -s -- --fast
+</code></pre>
+<p># 网络测速与VPS路由</p>
+<h1 id="测试-vps-ipv4ipv6-路由详细每一跳">测试 VPS IPv4/IPV6 路由(详细每一跳)</h1>
+<pre><code class="language-shell">wget -N --no-check-certificate https://raw.githubusercontent.com/Chennhaoo/Shell_Bash/master/AutoTrace.sh &amp;&amp; chmod +x AutoTrace.sh &amp;&amp; bash AutoTrace.sh
+</code></pre>
+<p># backtrace star 945 <a href="https://github.com/zhanghanyun/backtrace">项目地址</a></p>
+<p>推荐小白使用，快速测试VPS线路。</p>
+<pre><code class="language-shell">curl https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh -sSf | sh
+</code></pre>
+<p># Speedtest star 668 <a href="https://github.com/i-abc/Speedtest">项目地址</a></p>
+<p>VPS国内三网测试</p>
+<p>使用方法:</p>
+<pre><code class="language-shell">bash &lt;(curl -sL https://raw.githubusercontent.com/i-abc/Speedtest/main/speedtest.sh)
+</code></pre>
+<p># bench</p>
+<p>硬件系统参数及其IO，国外测速，国内测速</p>
+<pre><code class="language-shell">wget -qO- bench.sh | bash
+</code></pre>
+<p># VPS Linux 优化相关</p>
+<p># 原生BBR打开方法(仅用于 Debian系列系统)</p>
+<pre><code class="language-shell">echo &quot;net.core.default_qdisc=fq&quot; &gt;&gt; /etc/sysctl.conf
+echo &quot;net.ipv4.tcp_congestion_control=bbr&quot; &gt;&gt; /etc/sysctl.conf
+sysctl -p
+sysctl net.ipv4.tcp_available_congestion_control
+lsmod | grep bbr
+</code></pre>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[关于作者]]></title>
+        <id>https://blog.xbbazt.de/guan-yu/</id>
+        <link href="https://blog.xbbazt.de/guan-yu/">
+        </link>
+        <updated>2024-10-19T04:35:01.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="博客构造">博客构造</h1>
+<p><a href="https://github.com/getgridea/gridea">Gridea</a>+Github+Cloudflare pages</p>
+<h1 id="简介">简介</h1>
+<p>笔者并不是互联网从业者，只是对 网站搭建，博客，VPS，编程等。具有一种浓厚的兴趣！笔者的兴趣爱好有许多并非是一个宅男，摄影，旅游，和朋友偶尔去一下台球厅，电影院，KTV这些活动我生活添加了几分色彩！</p>
+<h1 id="为什么写博客">为什么写博客</h1>
+<p>你也看到了这个博客是纯静态部署在Cloudflare上的，这样只要配置文件不丢失我就可以一直记录生活发生的点点滴滴。10-20-30年以后自己看看自己在少年时期编写博客岂不是一件幸福事情啊！</p>
+<h1 id="联系方式">联系方式</h1>
+<p>邮箱：xbbazt@outlook.com/xbbazt@gmail.com<br>
+Telegram: @xbbazt<br>
+YouTube: <a href="https://www.youtube.com/@IT-dp8ef">小白白爱折腾</a></p>
+]]></content>
+    </entry>
+</feed>
